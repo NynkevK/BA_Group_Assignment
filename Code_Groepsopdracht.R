@@ -49,7 +49,7 @@ library(HH)
 # Set directories
 #-----------------------------------------------------------------------------
 
-dir <- "C:/Users/nynke/OneDrive/Studie/3. Rotterdam School of Management, Erasmus University/3 Master/02 BM21MIM-P Business Analytics/Wekelijkse Opdrachten/Week 4/R Code/"
+dir <- "C:/Users/nynke/OneDrive/Studie/3. Rotterdam School of Management, Erasmus University/3 Master/02 BM21MIM-P Business Analytics/Groepsopdracht/R Code/"
 
 dirData <- paste0(dir, "Data/")
 dirProg <- paste0(dir, "Programs/")
@@ -59,7 +59,7 @@ dirRslt <- paste0(dir, "Results/")
 # Read the necessary file
 #-----------------------------------------------------------------------------
 # Read the data from csv file
-dfScooters<- read.csv(file = paste0(dirData, "Survey_deelscooters.csv"), 
+dfScooters<- read.csv(file = paste0(dirData, "deelscooters.csv"), 
                    stringsAsFactors = FALSE)
 
 #-----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ colnames(dfScooters)[colnames(dfScooters)=="Vraag.1"]<- "Geslacht"
 colnames(dfScooters)[colnames(dfScooters)=="Vraag.3"]<- "Vervoersmiddelen"
 colnames(dfScooters)[colnames(dfScooters)=="Q10"]<- "Woonplaats"
 colnames(dfScooters)[colnames(dfScooters)=="Vraag.2"]<- "Leeftijd"
-colnames(dfScooters)[colnames(dfScooters)=="Q10.1"]<- "Deelscooter gebruikt?"
+colnames(dfScooters)[colnames(dfScooters)=="Q10.1"]<- "Deelscooter_gebruikt?"
 colnames(dfScooters)[colnames(dfScooters)=="Q11"]<- "Deelscooter2023"
 colnames(dfScooters)[colnames(dfScooters)=="Q12"]<- "Deelscooter2022"
 
@@ -131,8 +131,12 @@ dfScooters$Q6_7 <- as.numeric(dfScooters$Q6_7)
 dfScooters$Q6_8 <- as.numeric(dfScooters$Q6_8)
 dfScooters$Q6_9 <- as.numeric(dfScooters$Q6_9)
 dfScooters$Leeftijd <- as.numeric(dfScooters$Leeftijd)
-dfScooters$Deelscooter2023 <- as.numeric(dfScooters$Deelscooter2023)
 dfScooters$Deelscooter2022 <- as.numeric(dfScooters$Deelscooter2022)
+dfScooters$Deelscooter2023 <- as.numeric(dfScooters$Deelscooter2023)
+
+# Change NA values to 0
+dfScooters$Deelscooter2022 <- replace(dfScooters$Deelscooter2022, is.na(dfScooters$Deelscooter2022), 0)
+dfScooters$Deelscooter2023 <- replace(dfScooters$Deelscooter2023, is.na(dfScooters$Deelscooter2023), 0)
 
 #-----------------------------------------------------------------------------
 # Univariate analysis
