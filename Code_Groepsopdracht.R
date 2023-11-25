@@ -48,13 +48,19 @@ library(HH)
 #-----------------------------------------------------------------------------
 # Set directories
 #-----------------------------------------------------------------------------
-
+#Nynke
 dir <- "C:/Users/nynke/OneDrive/Studie/3. Rotterdam School of Management, Erasmus University/3 Master/02 BM21MIM-P Business Analytics/Groepsopdracht/R Code/"
 
 dirData <- paste0(dir, "Data/")
 dirProg <- paste0(dir, "Programs/")
 dirRslt <- paste0(dir, "Results/")
 
+#Isabelle 
+dir <- "C:/Users/Isabe/OneDrive/Pre- master bedrijfskunde/Onderzoekstraining II/Tutorials/"
+
+dirData <- paste0(dir, "Data/")
+dirProg <- paste0(dir, "Programs/")
+dirRslt <- paste0(dir, "Results/")
 #-----------------------------------------------------------------------------
 # Read the necessary file
 #-----------------------------------------------------------------------------
@@ -161,7 +167,7 @@ dfScooters$geld <- psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4",
                                               "Q5_5", "Q5_6", "Q5_7", "Q5_8")], cumulative = FALSE)$scores
 
 #-----------------------------------------------------------------------------
-# Multivariate analysis I: Correlation
+# Multivariate analysis I: Correlation Suzanne
 #-----------------------------------------------------------------------------
 # Overview of the corrleation coefficients of all variables
 # TODO: moeten we hier nog een subset maken van alleen de kwantitatieve variabelen?
@@ -196,3 +202,67 @@ prop.table(table(dfScooters$fwoonplaats))
 
 # Tabel maken met resultaten
 stargazer(rsltA,rsltB, type="html", out = paste0(dirRslt, "Schattingsresultaten.doc"))
+
+#-----------------------------------------------------------------------------
+# Multivariate analysis I: Correlation Isabelle 
+#-----------------------------------------------------------------------------
+# Multivariate model A
+mdlA <- Deelscooter2023 ~ NEP + Geld + Geslacht + Woonplaats + Leeftijd
+
+rsltA <- lm(mdlA, data = dfScooters)
+
+summary(rsltA)
+
+stargazer(rsltA,
+          title="tbd", 
+          align=TRUE, no.space=TRUE, intercept.bottom = FALSE,
+          type="text")
+
+# Multicollineariteit
+# VIF results for the phone_data
+vif(rsltA) 
+
+# Tol = 1/VIF
+1/vif(rsltA)
+
+# Combined results
+rsltB <- cbind(VIF = vif(rsltA) ,TOL = 1/vif(rsltA))
+
+# table format
+stargazer(rsltB,
+          title="tba", 
+          align=TRUE, no.space=TRUE, intercept.bottom = FALSE,
+          type="text")
+
+#Effect
+rsltA <- lm(mdlA, data = dfScooters)
+rsltA.beta <- lm.beta(rsltA) 
+
+# Output the results
+summary(rsltA.beta)
+
+#Residuals versus fitted values
+yhat    <- fitted(rsltA)        # Fitted values
+sdresid <- rstudent(rsltA)      # sdresid
+alpha <- 0.01
+
+dfScooters$yhat  <- yhat 
+dfScooters$sdresidy <- sdresid
+
+dfTmp <- data.frame(sdresid, yhat)
+
+ggplot(dfTmp, aes(x = yhat, y = sdresid)) +
+  geom_point(colour = "lightblue") +
+  ylab("Residuen") +
+  xlab("Voorspelde waarden") +
+  ggtitle("tbd") +  
+  geom_hline(yintercept = 0, colour = "red") +
+  geom_hline(yintercept = qt(1 - alpha/2, rsltA$df.residual), 
+             colour = "red", linetype = 2) +
+  geom_hline(yintercept = -qt(1 - alpha/2, rsltA$df.residual), 
+             colour = "red", linetype = 2) +
+  theme(axis.text.x = element_text(size = rel(1.25)),
+        axis.text.y = element_text(size = rel(1.25)))
+ggsave(paste0(dirRslt,"Groepsproject.pdf"),
+       width=8, height=6)
+
