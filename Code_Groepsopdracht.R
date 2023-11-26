@@ -1,8 +1,8 @@
 #-----------------------------------------------------------------------------
 # Authors: Nynke van Koningsveld, Suzanne Poelgeest, Isabelle Quartel,
-# Olivier van Warmerdam, David nog iets.
+# Olivier van Warmerdam, David van Rosmalen.
 #-----------------------------------------------------------------------------
-test
+
 #-----------------------------------------------------------------------------
 # Clear the global environment
 #-----------------------------------------------------------------------------
@@ -26,6 +26,8 @@ cat("\f")
 # install.packages("dplyr", dependencies = TRUE)
 # install.packages("HH", dependencies = TRUE)
 # install.packages("ggmap", dependencies = TRUE)
+# install.packages("car", dependencies = TRUE)
+# install.packages("lm.beta", dependencies = TRUE)
 
 #-----------------------------------------------------------------------------
 # Load packages
@@ -44,6 +46,8 @@ library(corrplot)
 library(gmodels)
 library(dplyr)
 library(HH)
+library(lm.beta)
+library(car)
 
 #-----------------------------------------------------------------------------
 # Set directories
@@ -112,6 +116,10 @@ dfScooters$fvervoersmiddelen <- factor(dfScooters$Vervoersmiddelen,
                                           "Elektrische fiets", "Gewone fiets (niet-elektrisch)", 
                                           "Anders"))
 
+dfScooters$fDeelscootergebruikt <- factor(dfScooters$`Deelscooter_gebruikt?`,
+                                             levels = c("1", "2"),
+                                             labels = c("ja", "nee"))
+
 #Switch to numeric values
 dfScooters$Q5_1 <- as.numeric(dfScooters$Q5_1)
 dfScooters$Q5_2 <- as.numeric(dfScooters$Q5_2)
@@ -151,6 +159,10 @@ psych::alpha(dfScooters[c("Q6_1", "Q6_2", "Q6_3",
 psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4", 
                            "Q5_5", "Q5_6", "Q5_7", "Q5_8")])
 
+# Cronbach's Alpha for monetary value als je Q5_5 weg laat
+psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4", 
+                           "Q5_6", "Q5_7", "Q5_8")])
+
 # Add scores to dataframe
 dfScooters$NEP <- psych::alpha(dfScooters[c("Q6_1", "Q6_2", "Q6_3", 
                                             "Q6_4", "Q6_5", "Q6_6", "Q6_7", "Q6_8", "Q6_9")],
@@ -163,36 +175,108 @@ dfScooters$geld <- psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4",
 #-----------------------------------------------------------------------------
 # Multivariate analysis I: Correlation
 #-----------------------------------------------------------------------------
-# Overview of the corrleation coefficients of all variables
-# TODO: moeten we hier nog een subset maken van alleen de kwantitatieve variabelen?
-cor(dfScooters)
-
-# Compare to Spearman's method
-# TODO: moeten we hier nog een subset maken van alleen de kwantitatieve variabelen?
-cor(dfScooters, method = "Spearman")
 
 # Mean and standard deviations for quantitative variables
-# TODO: bij deelscooter2022 en deelscooter2023 lege velden niet meenemen?
 mean(dfScooters$Leeftijd)
 sd(dfScooters$Leeftijd)
 mean(dfScooters$Deelscooter2023)
 sd(dfScooters$Deelscooter2023)
-mean(dfScooters$NEP)
-sd(dfScooters$NEP)
+mean(dfScooters$Deelscooter2022)
+sd(dfScooters$Deelscooter2022)
 mean(dfScooters$geld)
 sd(dfScooters$geld)
+mean(dfScooters$NEP)
+sd(dfScooters$NEP)
 
-# proporties of nominal variables
+# absolute values of nominal variables
+table(dfScooters$fgeslacht)
+table(dfScooters$fwoonplaats)
+table(dfScooters$fDeelscootergebruikt)
+
+# proportions of nominal variables
 prop.table(table(dfScooters$fgeslacht))
 prop.table(table(dfScooters$fwoonplaats))
+prop.table(table(dfScooters$fDeelscootergebruikt))
            
-# Simple linear regression analysis?
-# mdlA <- afhankelijkeVariabele ~ variabele1
-# rsltA <- lm(mdlA, data = dfScooters)
+# Formulate and estimate different models
+mdlA <- Deelscooter2022 ~ NEP 
+rsltA <- lm(mdlA, data = dfScooters)
 
-# mdlB <- afhankelijkeVariabele ~ variabele 1 + variabele2
-# rsltB <- lm(mdlB, data = dfScooters)
+mdlB <- Deelscooter2022 ~ fgeslacht
+rsltB <- lm(mdlB, data = dfScooters)
 
+mdlC <- Deelscooter2022 ~ Geld
+rsltC <- lm(mdlC, data = dfScooters)
 
-# Tabel maken met resultaten
-stargazer(rsltA,rsltB, type="html", out = paste0(dirRslt, "Schattingsresultaten.doc"))
+mdlD <- Deelscooter2022 ~ Leeftijd
+rsltD <- lm(mdlD, data = dfScooters)
+
+mdlE <- Deelscooter2022 ~ fwoonplaats
+rsltE <- lm(mdlE, data = dfScooters)
+
+mdlF <- Deelscooter2022 ~ fwoonplaats + Leeftijd
+rsltF <- lm(mdlF, data = dfScooters)
+
+mdlG <- Deelscooter2022 ~ NEP + Geld + fgeslacht + fwoonplaats + Leeftijd
+rsltG <- lm(mdlG, data = dfScooters)
+
+# Regressionresult of all the models in 1 table
+stargazer(rsltA, rsltB, rsltC, rsltD, rsltE, rsltF, rsltG,
+          title="Regressieresultaten", 
+          column.labels = c("Model A", "Model B", "Model C", "Model D", "Model E",
+                            "Model F", "Model G"),
+          align=TRUE, no.space=TRUE, intercept.bottom = FALSE,
+          type="html",
+          out = paste0(dirRslt,"Regressieresultaten groepsopdracht.doc"))
+
+# Standardized beta's for Model G
+rsltG.beta <- lm.beta(rsltG) 
+
+# Output the results
+stargazer(rsltG.beta,
+          title="Gestandaardiseerde regressieresultaten", 
+          column.labels = c("Model G"), 
+          align=TRUE, no.space=TRUE, intercept.bottom = FALSE,
+          type="html",
+          out = paste0(dirRslt,"Gestandaardiseerde regressieresultaten groepsopdracht.doc"))
+
+# Multicollineariteit
+# VIF results
+vif(rsltA) 
+
+# Tol = 1/VIF
+1/vif(rsltA)
+
+# Combined results
+rsltH <- cbind(VIF = vif(rsltA) ,TOL = 1/vif(rsltA))
+
+# table format
+stargazer(rsltH,
+          title="tba", 
+          align=TRUE, no.space=TRUE, intercept.bottom = FALSE,
+          type="text")
+
+#Residuals versus fitted values
+yhat    <- fitted(rsltA)        # Fitted values
+sdresid <- rstudent(rsltA)      # sdresid
+alpha <- 0.01
+
+dfScooters$yhat  <- yhat 
+dfScooters$sdresidy <- sdresid
+
+dfTmp <- data.frame(sdresid, yhat)
+
+ggplot(dfTmp, aes(x = yhat, y = sdresid)) +
+  geom_point(colour = "lightblue") +
+  ylab("Residuen") +
+  xlab("Voorspelde waarden") +
+  ggtitle("tbd") +  
+  geom_hline(yintercept = 0, colour = "red") +
+  geom_hline(yintercept = qt(1 - alpha/2, rsltA$df.residual), 
+             colour = "red", linetype = 2) +
+  geom_hline(yintercept = -qt(1 - alpha/2, rsltA$df.residual), 
+             colour = "red", linetype = 2) +
+  theme(axis.text.x = element_text(size = rel(1.25)),
+        axis.text.y = element_text(size = rel(1.25)))
+ggsave(paste0(dirRslt,"Groepsproject.pdf"),
+       width=8, height=6)
