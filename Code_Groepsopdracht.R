@@ -2,7 +2,7 @@
 # Authors: Nynke van Koningsveld, Suzanne Poelgeest, Isabelle Quartel,
 # Olivier van Warmerdam, David nog iets.
 #-----------------------------------------------------------------------------
-
+test
 #-----------------------------------------------------------------------------
 # Clear the global environment
 #-----------------------------------------------------------------------------
