@@ -280,3 +280,30 @@ ggplot(dfTmp, aes(x = yhat, y = sdresid)) +
         axis.text.y = element_text(size = rel(1.25)))
 ggsave(paste0(dirRslt,"Groepsproject.pdf"),
        width=8, height=6)
+
+#-----------------------------------------------------------------------------
+# Classificatie analyse
+#-----------------------------------------------------------------------------
+# later nog naar boven verplaatsen bij overige installaties
+# install.packages("rpart", dependencies = TRUE)
+library(rpart)
+
+# install.packages("rpart.plot", dependencies = TRUE)
+library(rpart.plot)
+
+mdlG.class <- fDeelscootergebruikt ~ NEP + geld + Geslacht + Woonplaats + Leeftijd
+rsltTreeG <- rpart(mdlG.class, data=dfScooters, 
+                   method="class", 
+                   parms = list(split = "information"))
+
+rpart.plot(rsltTreeG, extra = 101, digits = 3, box.palette = "blue")
+# NOTE: ik krijg hier alleen een boom met age
+
+mdlA.class <- fDeelscootergebruikt ~ NEP
+rsltTreeA <- rpart(mdlA.class, data=dfScooters, 
+                   method="class", 
+                   parms = list(split = "information"))
+
+rpart.plot(rsltTreeA, extra = 101, digits = 3, box.palette = "blue")
+# TODO: uitzoeken waarom je bij model G maar 1 splitsing krijgt. Wellicht iets met die randomforest functie?
+
