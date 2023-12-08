@@ -28,6 +28,8 @@ cat("\f")
 # install.packages("ggmap", dependencies = TRUE)
 # install.packages("car", dependencies = TRUE)
 # install.packages("lm.beta", dependencies = TRUE)
+# install.packages("rpart", dependencies = TRUE)
+# install.packages("rpart.plot", dependencies = TRUE)
 
 #-----------------------------------------------------------------------------
 # Load packages
@@ -48,6 +50,8 @@ library(dplyr)
 library(HH)
 library(lm.beta)
 library(car)
+library(rpart)
+library(rpart.plot)
 
 #-----------------------------------------------------------------------------
 # Set directories
@@ -64,7 +68,7 @@ dirRslt <- paste0(dir, "Results/")
 #-----------------------------------------------------------------------------
 # Read the data from csv file
 dfScooters<- read.csv(file = paste0(dirData, "deelscooters.csv"), 
-                   stringsAsFactors = FALSE)
+                      stringsAsFactors = FALSE)
 
 #-----------------------------------------------------------------------------
 # Preliminaries
@@ -103,22 +107,22 @@ colnames(dfScooters)[colnames(dfScooters)=="Q12"]<- "Deelscooter2022"
 
 # Switch Variables to factor
 dfScooters$fgeslacht <- factor(dfScooters$Geslacht, 
-              levels = c("1", "2"), labels = c("Man", "Vrouw"))
+                               levels = c("1", "2"), labels = c("Man", "Vrouw"))
 
 dfScooters$fwoonplaats <- factor(dfScooters$Woonplaats, 
-                               levels = c("1", "2", "3", "4", "5"), 
-                               labels = c("Stedelijk gebied", "Buitenwijk van een stad",
-                                          "Grotere plaats", "Kleinere plaats", "Platteland"))
+                                 levels = c("1", "2", "3", "4", "5"), 
+                                 labels = c("Stedelijk gebied", "Buitenwijk van een stad",
+                                            "Grotere plaats", "Kleinere plaats", "Platteland"))
 
 dfScooters$fvervoersmiddelen <- factor(dfScooters$Vervoersmiddelen, 
-                               levels = c("1", "2", "3", "4", "5"), 
-                               labels = c("Auto", "Scooter/bromfiets",
-                                          "Elektrische fiets", "Gewone fiets (niet-elektrisch)", 
-                                          "Anders"))
+                                       levels = c("1", "2", "3", "4", "5"), 
+                                       labels = c("Auto", "Scooter/bromfiets",
+                                                  "Elektrische fiets", "Gewone fiets (niet-elektrisch)", 
+                                                  "Anders"))
 
 dfScooters$fDeelscootergebruikt <- factor(dfScooters$`Deelscooter_gebruikt?`,
-                                             levels = c("1", "2"),
-                                             labels = c("ja", "nee"))
+                                          levels = c("1", "2"),
+                                          labels = c("ja", "nee"))
 
 #Switch to numeric values
 dfScooters$Q5_1 <- as.numeric(dfScooters$Q5_1)
@@ -150,10 +154,9 @@ dfScooters$Deelscooter2023 <- replace(dfScooters$Deelscooter2023, is.na(dfScoote
 # Reliability Analysis of Likert Scales
 #-----------------------------------------------------------------------------
 # Cronbach's Alpha for NEP
-library(psych)
 psych::alpha(dfScooters[c("Q6_1", "Q6_2", "Q6_3", 
-                    "Q6_4", "Q6_5", "Q6_6", "Q6_7", "Q6_8", "Q6_9")],
-      keys=c("Q6_1", "Q6_5", "Q6_7", "Q6_9"))
+                          "Q6_4", "Q6_5", "Q6_6", "Q6_7", "Q6_8", "Q6_9")],
+             keys=c("Q6_1", "Q6_5", "Q6_7", "Q6_9"))
 
 # Cronbach's Alpha for monetary value
 psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4", 
@@ -167,9 +170,9 @@ psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4",
 dfScooters$NEP <- psych::alpha(dfScooters[c("Q6_1", "Q6_2", "Q6_3", 
                                             "Q6_4", "Q6_5", "Q6_6", "Q6_7", "Q6_8", "Q6_9")],
                                keys=c("Q6_1", "Q6_5", "Q6_7", "Q6_9"),
-                       cumulative = FALSE)$scores
+                               cumulative = FALSE)$scores
 
-dfScooters$geld <- psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4", 
+dfScooters$Geld <- psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4", 
                                               "Q5_5", "Q5_6", "Q5_7", "Q5_8")], cumulative = FALSE)$scores
 
 #-----------------------------------------------------------------------------
@@ -284,6 +287,7 @@ ggplot(dfTmp, aes(x = yhat, y = sdresid)) +
   geom_point(colour = "black") +
   ylab("Residuen") +
   xlab("Voorspelde waarden") +
+  ggtitle("tbd") +  
   geom_hline(yintercept = 0, colour = "grey") +
   geom_hline(yintercept = qt(1 - alpha/2, rsltA$df.residual), 
              colour = "grey", linetype = 2) +
@@ -297,14 +301,7 @@ ggsave(paste0(dirRslt,"Groepsproject.png"),
 #-----------------------------------------------------------------------------
 # Classificatie analyse
 #-----------------------------------------------------------------------------
-# later nog naar boven verplaatsen bij overige installaties
-# install.packages("rpart", dependencies = TRUE)
-library(rpart)
-
-# install.packages("rpart.plot", dependencies = TRUE)
-library(rpart.plot)
-
-mdlG.class <- fDeelscootergebruikt ~ NEP + geld + Geslacht + Woonplaats + Leeftijd
+mdlG.class <- fDeelscootergebruikt ~ NEP + Geld + Geslacht + Woonplaats + Leeftijd
 rsltTreeG <- rpart(mdlG.class, data=dfScooters, 
                    method="class", 
                    parms = list(split = "information"))
@@ -312,12 +309,11 @@ rsltTreeG <- rpart(mdlG.class, data=dfScooters,
 rpart.plot(rsltTreeG, extra = 101, digits = 3, box.palette = "blue")
 
 # Age verwijderen uit het model
-mdlH.class <- fDeelscootergebruikt ~ NEP + geld + fgeslacht + fwoonplaats
+mdlH.class <- fDeelscootergebruikt ~ NEP + Geld + fgeslacht + fwoonplaats
 rsltTreeH <- rpart(mdlH.class, data=dfScooters, 
                    method="class", 
                    parms = list(split = "information"))
 
+rpart.plot(rsltTreeH, extra = 104, digits = 3, box.col=c("white","grey")[rsltTreeH$frame$yval])
 png(paste0(dirRslt, "ClassificationTreeGroepsopdracht.png"))
-rpart.plot(rsltTreeH, extra = 104, digits = 3, box.col=c("white","grey")[rsltTreeA$frame$yval])
 dev.off()
-
