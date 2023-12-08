@@ -311,13 +311,14 @@ rsltTreeG <- rpart(mdlG.class, data=dfScooters,
                    parms = list(split = "information"))
 
 rpart.plot(rsltTreeG, extra = 101, digits = 3, box.palette = "blue")
-# NOTE: ik krijg hier alleen een boom met age
 
-mdlA.class <- fDeelscootergebruikt ~ NEP
-rsltTreeA <- rpart(mdlA.class, data=dfScooters, 
+# Age verwijderen uit het model
+mdlH.class <- fDeelscootergebruikt ~ NEP + geld + fgeslacht + fwoonplaats
+rsltTreeH <- rpart(mdlH.class, data=dfScooters, 
                    method="class", 
                    parms = list(split = "information"))
 
-rpart.plot(rsltTreeA, extra = 101, digits = 3, box.palette = "blue")
-# TODO: uitzoeken waarom je bij model G maar 1 splitsing krijgt. Wellicht iets met die randomforest functie?
+png(paste0(dirRslt, "ClassificationTreeGroepsopdracht.png"))
+rpart.plot(rsltTreeH, extra = 104, digits = 3, box.col=c("white","grey")[rsltTreeA$frame$yval])
+dev.off()
 
