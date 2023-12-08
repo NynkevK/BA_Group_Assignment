@@ -147,7 +147,7 @@ dfScooters$Deelscooter2022 <- replace(dfScooters$Deelscooter2022, is.na(dfScoote
 dfScooters$Deelscooter2023 <- replace(dfScooters$Deelscooter2023, is.na(dfScooters$Deelscooter2023), 0)
 
 #-----------------------------------------------------------------------------
-# Univariate analysis
+# Reliability Analysis of Likert Scales
 #-----------------------------------------------------------------------------
 # Cronbach's Alpha for NEP
 library(psych)
@@ -173,9 +173,8 @@ dfScooters$geld <- psych:: alpha(dfScooters[c("Q5_1", "Q5_2", "Q5_3","Q5_4",
                                               "Q5_5", "Q5_6", "Q5_7", "Q5_8")], cumulative = FALSE)$scores
 
 #-----------------------------------------------------------------------------
-# Multivariate analysis I: Correlation
+# Descriptive Analysis
 #-----------------------------------------------------------------------------
-
 # Mean and standard deviations for quantitative variables
 mean(dfScooters$Leeftijd)
 sd(dfScooters$Leeftijd)
@@ -197,7 +196,22 @@ table(dfScooters$fDeelscootergebruikt)
 prop.table(table(dfScooters$fgeslacht))
 prop.table(table(dfScooters$fwoonplaats))
 prop.table(table(dfScooters$fDeelscootergebruikt))
-           
+
+# Frequentie-kruis-tabel
+stargazer(table(dfScooters$fgeslacht, dfScooters$fDeelscootergebruikt),
+          title="Kruistabel met frequenties",
+          align=TRUE, no.space=TRUE,
+          type="html",
+          out = paste0(dirRslt,"Freq_table_hypothesis_1.doc"))
+
+table(dfScooters$fgeslacht, dfScooters$fDeelscootergebruikt)
+table(dfScooters$fgeslacht, dfScooters$Deelscooter2022)
+table(dfScooters$fwoonplaats, dfScooters$fDeelscootergebruikt)
+table(dfScooters$fwoonplaats, dfScooters$Deelscooter2022)
+
+#-----------------------------------------------------------------------------
+# Multivariate analysis with regression
+#-----------------------------------------------------------------------------
 # Formulate and estimate different models
 mdlA <- Deelscooter2022 ~ NEP 
 rsltA <- lm(mdlA, data = dfScooters)
