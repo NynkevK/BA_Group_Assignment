@@ -281,18 +281,17 @@ dfScooters$sdresidy <- sdresid
 dfTmp <- data.frame(sdresid, yhat)
 
 ggplot(dfTmp, aes(x = yhat, y = sdresid)) +
-  geom_point(colour = "lightblue") +
+  geom_point(colour = "black") +
   ylab("Residuen") +
   xlab("Voorspelde waarden") +
-  ggtitle("tbd") +  
-  geom_hline(yintercept = 0, colour = "red") +
+  geom_hline(yintercept = 0, colour = "grey") +
   geom_hline(yintercept = qt(1 - alpha/2, rsltA$df.residual), 
-             colour = "red", linetype = 2) +
+             colour = "grey", linetype = 2) +
   geom_hline(yintercept = -qt(1 - alpha/2, rsltA$df.residual), 
-             colour = "red", linetype = 2) +
+             colour = "grey", linetype = 2) +
   theme(axis.text.x = element_text(size = rel(1.25)),
         axis.text.y = element_text(size = rel(1.25)))
-ggsave(paste0(dirRslt,"Groepsproject.pdf"),
+ggsave(paste0(dirRslt,"Groepsproject.png"),
        width=8, height=6)
 
 #-----------------------------------------------------------------------------
