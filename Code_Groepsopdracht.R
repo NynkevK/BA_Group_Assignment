@@ -214,6 +214,7 @@ table(dfScooters$fwoonplaats, dfScooters$Deelscooter2022)
 
 t.test(dfScooters$Deelscooter2022)
 t.test(dfScooters$Deelscooter2023)
+t.test(dfScooters$Deelscooter2022, dfScooters$Deelscooter2023)
 t.test(dfScooters$Deelscooter2022, dfScooters$Deelscooter2023, paired = TRUE)
 
 #-----------------------------------------------------------------------------
