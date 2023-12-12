@@ -212,6 +212,10 @@ table(dfScooters$fgeslacht, dfScooters$Deelscooter2022)
 table(dfScooters$fwoonplaats, dfScooters$fDeelscootergebruikt)
 table(dfScooters$fwoonplaats, dfScooters$Deelscooter2022)
 
+t.test(dfScooters$Deelscooter2022)
+t.test(dfScooters$Deelscooter2023)
+t.test(dfScooters$Deelscooter2022, dfScooters$Deelscooter2023, paired = TRUE)
+
 #-----------------------------------------------------------------------------
 # Multivariate analysis with regression
 #-----------------------------------------------------------------------------
@@ -314,6 +318,6 @@ rsltTreeH <- rpart(mdlH.class, data=dfScooters,
                    method="class", 
                    parms = list(split = "information"))
 
-rpart.plot(rsltTreeH, extra = 104, digits = 3, box.col=c("white","grey")[rsltTreeH$frame$yval])
 png(paste0(dirRslt, "ClassificationTreeGroepsopdracht.png"))
+rpart.plot(rsltTreeH, extra = 104, digits = 3, box.col=c("white","grey")[rsltTreeH$frame$yval])
 dev.off()
